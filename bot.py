@@ -54,7 +54,7 @@ def medal_path(medal_id: int) -> Path:
 
 @bot.tree.command(
     name="draw",
-    description="Draw a random Fiesta medal (once per day, up to five total).",
+    description="Obtén una medalla Fiesta al azar (una vez por día, máximo cinco en total).",
 )
 async def draw(interaction: discord.Interaction):
     user_id = interaction.user.id
@@ -64,15 +64,15 @@ async def draw(interaction: discord.Interaction):
 
     if state["draws_used"] >= MAX_DRAWS:
         await interaction.response.send_message(
-            f"You've used all {MAX_DRAWS} of your medal draws. "
-            "Trade with other collectors to complete your set!",
+            f"Ya usaste todos tus {MAX_DRAWS} turnos de medalla. "
+            "¡Intercambia con otros coleccionistas para completar tu colección!",
             ephemeral=True,
         )
         return
 
     if state["last_draw_date"] == today:
         await interaction.response.send_message(
-            "You've already drawn today. Come back tomorrow!",
+            "Ya sacaste tu medalla de hoy. ¡Vuelve mañana!",
             ephemeral=True,
         )
         return
@@ -83,8 +83,8 @@ async def draw(interaction: discord.Interaction):
     remaining = MAX_DRAWS - (state["draws_used"] + 1)
     file = discord.File(medal_path(medal["id"]), filename=medal["image"])
     embed = discord.Embed(
-        title=f"You drew: {medal['name']}",
-        description=f"{medal['description']}\n\nDraws remaining: **{remaining}**",
+        title=f"¡Sacaste: {medal['name']}!",
+        description=f"{medal['description']}\n\nTurnos restantes: **{remaining}**",
         color=discord.Color.gold(),
     )
     embed.set_image(url=f"attachment://{medal['image']}")
@@ -97,13 +97,13 @@ async def draw(interaction: discord.Interaction):
 
 @bot.tree.command(
     name="collection",
-    description="Show your current Fiesta medal collection.",
+    description="Muestra tu colección actual de medallas Fiesta.",
 )
 async def collection(interaction: discord.Interaction):
     inv = db.get_inventory(interaction.user.id)
     if not inv:
         await interaction.response.send_message(
-            "You don't have any medals yet — try `/draw`.",
+            "Todavía no tienes medallas. ¡Prueba con `/draw`!",
             ephemeral=True,
         )
         return
@@ -112,7 +112,7 @@ async def collection(interaction: discord.Interaction):
     buf = images.collage(paths)
     file = discord.File(buf, filename="collection.png")
     embed = discord.Embed(
-        title=f"{interaction.user.display_name}'s collection",
+        title=f"Colección de {interaction.user.display_name}",
         color=discord.Color.gold(),
     )
     embed.set_image(url="attachment://collection.png")
@@ -125,12 +125,12 @@ async def collection(interaction: discord.Interaction):
 
 @bot.tree.command(
     name="wear",
-    description="Show your medals pinned on the shirt or bag template.",
+    description="Muestra tus medallas en la plantilla de camisa o bolsa.",
 )
 async def wear(interaction: discord.Interaction):
     if not TEMPLATE_PATH.exists():
         await interaction.response.send_message(
-            "No shirt or bag template has been set up yet. Stay tuned!",
+            "Todavía no hay una plantilla de camisa o bolsa configurada. ¡Próximamente!",
             ephemeral=True,
         )
         return
@@ -138,7 +138,7 @@ async def wear(interaction: discord.Interaction):
     inv = db.get_inventory(interaction.user.id)
     if not inv:
         await interaction.response.send_message(
-            "You don't have any medals yet — try `/draw`.",
+            "Todavía no tienes medallas. ¡Prueba con `/draw`!",
             ephemeral=True,
         )
         return
@@ -147,7 +147,7 @@ async def wear(interaction: discord.Interaction):
     buf = images.wear(paths, str(TEMPLATE_PATH))
     file = discord.File(buf, filename="wear.png")
     embed = discord.Embed(
-        title=f"{interaction.user.display_name}'s look",
+        title=f"El look de {interaction.user.display_name}",
         color=discord.Color.gold(),
     )
     embed.set_image(url="attachment://wear.png")
@@ -179,7 +179,7 @@ class MedalSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         if interaction.user.id != self.owner_id:
             await interaction.response.send_message(
-                "This selection isn't yours.", ephemeral=True
+                "Esta selección no es tuya.", ephemeral=True
             )
             return
         await self.view.on_pick(interaction, int(self.values[0]))
@@ -190,13 +190,13 @@ class InitiatorSelectView(discord.ui.View):
         super().__init__(timeout=300)
         self.initiator_id = initiator_id
         self.target = target
-        self.add_item(MedalSelect(initiator_id, initiator_inv, "Choose a medal to offer..."))
+        self.add_item(MedalSelect(initiator_id, initiator_inv, "Elige una medalla para ofrecer..."))
 
     async def on_pick(self, interaction: discord.Interaction, medal_id: int):
         target_inv = db.get_inventory(self.target.id)
         if not target_inv:
             await interaction.response.edit_message(
-                content=f"{self.target.display_name} has no medals to trade.",
+                content=f"{self.target.display_name} no tiene medallas para intercambiar.",
                 view=None,
             )
             return
@@ -205,13 +205,13 @@ class InitiatorSelectView(discord.ui.View):
             child.disabled = True
         offered = MEDAL_BY_ID[medal_id]
         await interaction.response.edit_message(
-            content=f"You offered **{offered['name']}**. Waiting for {self.target.display_name}...",
+            content=f"Ofreciste **{offered['name']}**. Esperando a {self.target.display_name}...",
             view=self,
         )
         await interaction.followup.send(
             content=(
-                f"{self.target.mention}, {interaction.user.display_name} wants to trade "
-                f"their **{offered['name']}**. Pick one of your medals to offer in return:"
+                f"{self.target.mention}, {interaction.user.display_name} quiere intercambiar "
+                f"su **{offered['name']}**. Elige una de tus medallas para ofrecer a cambio:"
             ),
             view=TargetSelectView(
                 target_id=self.target.id,
@@ -234,7 +234,7 @@ class TargetSelectView(discord.ui.View):
         self.target_id = target_id
         self.initiator = initiator
         self.initiator_medal = initiator_medal
-        self.add_item(MedalSelect(target_id, target_inv, "Choose a medal to offer in return..."))
+        self.add_item(MedalSelect(target_id, target_inv, "Elige una medalla para ofrecer a cambio..."))
 
     async def on_pick(self, interaction: discord.Interaction, target_medal: int):
         for child in self.children:
@@ -244,13 +244,13 @@ class TargetSelectView(discord.ui.View):
         t_medal = MEDAL_BY_ID[target_medal]
 
         await interaction.response.edit_message(
-            content=f"{interaction.user.display_name} offered **{t_medal['name']}** in return.",
+            content=f"{interaction.user.display_name} ofreció **{t_medal['name']}** a cambio.",
             view=self,
         )
         await interaction.followup.send(
             content=(
-                f"{self.initiator.mention}, do you confirm exchanging your "
-                f"**{i_medal['name']}** for {interaction.user.display_name}'s **{t_medal['name']}**?"
+                f"{self.initiator.mention}, ¿confirmas el intercambio de tu "
+                f"**{i_medal['name']}** por el **{t_medal['name']}** de {interaction.user.display_name}?"
             ),
             view=ConfirmView(
                 initiator_id=self.initiator.id,
@@ -275,22 +275,22 @@ class ConfirmView(discord.ui.View):
         self.initiator_medal = initiator_medal
         self.target_medal = target_medal
 
-    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.success)
+    @discord.ui.button(label="Confirmar", style=discord.ButtonStyle.success)
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.initiator_id:
             await interaction.response.send_message(
-                "Only the trade initiator can confirm.", ephemeral=True
+                "Solo quien inició el intercambio puede confirmarlo.", ephemeral=True
             )
             return
 
         if not db.has_medal(self.initiator_id, self.initiator_medal):
             await interaction.response.edit_message(
-                content="Trade cancelled: you no longer have that medal.", view=None
+                content="Intercambio cancelado: ya no tienes esa medalla.", view=None
             )
             return
         if not db.has_medal(self.target_id, self.target_medal):
             await interaction.response.edit_message(
-                content="Trade cancelled: the other player no longer has that medal.",
+                content="Intercambio cancelado: el otro jugador ya no tiene esa medalla.",
                 view=None,
             )
             return
@@ -305,48 +305,48 @@ class ConfirmView(discord.ui.View):
         t_medal = MEDAL_BY_ID[self.target_medal]
         await interaction.response.edit_message(
             content=(
-                f"Trade complete: <@{self.initiator_id}>'s **{i_medal['name']}** "
-                f"for <@{self.target_id}>'s **{t_medal['name']}**."
+                f"¡Intercambio completado: **{i_medal['name']}** de <@{self.initiator_id}> "
+                f"por **{t_medal['name']}** de <@{self.target_id}>!"
             ),
             view=None,
         )
 
-    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger)
+    @discord.ui.button(label="Cancelar", style=discord.ButtonStyle.danger)
     async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.initiator_id:
             await interaction.response.send_message(
-                "Only the trade initiator can cancel.", ephemeral=True
+                "Solo quien inició el intercambio puede cancelarlo.", ephemeral=True
             )
             return
-        await interaction.response.edit_message(content="Trade cancelled.", view=None)
+        await interaction.response.edit_message(content="Intercambio cancelado.", view=None)
 
 
 @bot.tree.command(
     name="trade",
-    description="Propose a medal trade with another collector.",
+    description="Propone un intercambio de medalla con otro coleccionista.",
 )
-@app_commands.describe(target="The collector you want to trade with")
+@app_commands.describe(target="El coleccionista con quien quieres intercambiar")
 async def trade(interaction: discord.Interaction, target: discord.Member):
     if target.bot:
         await interaction.response.send_message(
-            "Bots can't trade medals.", ephemeral=True
+            "Los bots no pueden intercambiar medallas.", ephemeral=True
         )
         return
     if target.id == interaction.user.id:
         await interaction.response.send_message(
-            "You can't trade with yourself.", ephemeral=True
+            "No puedes intercambiar contigo mismo.", ephemeral=True
         )
         return
 
     inv = db.get_inventory(interaction.user.id)
     if not inv:
         await interaction.response.send_message(
-            "You don't have any medals to trade yet.", ephemeral=True
+            "Todavía no tienes medallas para intercambiar.", ephemeral=True
         )
         return
 
     await interaction.response.send_message(
-        content=f"Pick a medal to offer to {target.display_name}:",
+        content=f"Elige una medalla para ofrecer a {target.display_name}:",
         view=InitiatorSelectView(interaction.user.id, inv, target),
         ephemeral=True,
     )
