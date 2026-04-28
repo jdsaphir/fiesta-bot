@@ -1,0 +1,7 @@
+[
+  {"id": 1, "name": "Medal One",   "description": "Placeholder description for medal one.",   "image": "medal_1.png"},
+  {"id": 2, "name": "Medal Two",   "description": "Placeholder description for medal two.",   "image": "medal_2.png"},
+  {"id": 3, "name": "Medal Three", "description": "Placeholder description for medal three.", "image": "medal_3.png"},
+  {"id": 4, "name": "Medal Four",  "description": "Placeholder description for medal four.",  "image": "medal_4.png"},
+  {"id": 5, "name": "Medal Five",  "description": "Placeholder description for medal five.",  "image": "medal_5.png"}
+]
