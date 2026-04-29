@@ -53,7 +53,7 @@ def medal_path(medal_id: int) -> Path:
 # ---------------------------------------------------------------------------
 
 @bot.tree.command(
-    name="draw",
+    name="sacar",
     description="Obtén una medalla Fiesta al azar (una vez por día, máximo cinco en total).",
 )
 async def draw(interaction: discord.Interaction):
@@ -96,14 +96,14 @@ async def draw(interaction: discord.Interaction):
 # ---------------------------------------------------------------------------
 
 @bot.tree.command(
-    name="collection",
+    name="coleccion",
     description="Muestra tu colección actual de medallas Fiesta.",
 )
 async def collection(interaction: discord.Interaction):
     inv = db.get_inventory(interaction.user.id)
     if not inv:
         await interaction.response.send_message(
-            "Todavía no tienes medallas. ¡Prueba con `/draw`!",
+            "Todavía no tienes medallas. ¡Prueba con `/sacar`!",
             ephemeral=True,
         )
         return
@@ -124,7 +124,7 @@ async def collection(interaction: discord.Interaction):
 # ---------------------------------------------------------------------------
 
 @bot.tree.command(
-    name="wear",
+    name="lucir",
     description="Muestra tus medallas en la plantilla de camisa o bolsa.",
 )
 async def wear(interaction: discord.Interaction):
@@ -138,7 +138,7 @@ async def wear(interaction: discord.Interaction):
     inv = db.get_inventory(interaction.user.id)
     if not inv:
         await interaction.response.send_message(
-            "Todavía no tienes medallas. ¡Prueba con `/draw`!",
+            "Todavía no tienes medallas. ¡Prueba con `/sacar`!",
             ephemeral=True,
         )
         return
@@ -322,7 +322,7 @@ class ConfirmView(discord.ui.View):
 
 
 @bot.tree.command(
-    name="trade",
+    name="intercambiar",
     description="Propone un intercambio de medalla con otro coleccionista.",
 )
 @app_commands.describe(target="El coleccionista con quien quieres intercambiar")
