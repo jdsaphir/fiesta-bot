@@ -1,7 +1,7 @@
 [
-  {"id": 1, "name": "Medal One",   "description": "Placeholder description for medal one.",   "image": "medal_1.png"},
-  {"id": 2, "name": "Medal Two",   "description": "Placeholder description for medal two.",   "image": "medal_2.png"},
-  {"id": 3, "name": "Medal Three", "description": "Placeholder description for medal three.", "image": "medal_3.png"},
-  {"id": 4, "name": "Medal Four",  "description": "Placeholder description for medal four.",  "image": "medal_4.png"},
-  {"id": 5, "name": "Medal Five",  "description": "Placeholder description for medal five.",  "image": "medal_5.png"}
+  {"id": 1, "name": "Victor",           "description": "La leyenda con lentes oscuros. Victor vela por la comunidad con estilo propio.",          "image": "medal_1.png"},
+  {"id": 2, "name": "PUG B",            "description": "El pug más famoso del servidor. Fiel, adorable... y siempre listo para el combate.",       "image": "medal_2.png"},
+  {"id": 3, "name": "The Ban Pan",      "description": "El sartenazo definitivo. Esta medalla honra a quienes mantienen el orden en el servidor.", "image": "medal_3.png"},
+  {"id": 4, "name": "Muscle Chicken",   "description": "Pollo musculoso, instinto ganador. Solo los más fuertes sobreviven la zona azul.",         "image": "medal_4.png"},
+  {"id": 5, "name": "The Lone Survivor","description": "Oro puro para el último en pie. La medalla más codiciada de toda la colección.",           "image": "medal_5.png"}
 ]
