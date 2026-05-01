@@ -24,25 +24,33 @@ def collage(medal_paths: list[str]) -> io.BytesIO:
 
 
 def wear(medal_paths: list[str], template_path: str) -> io.BytesIO:
-    """Pin medals onto a shirt/bag template. Positioning is a first pass —
-    once the creative team ships the template, tweak target_w and (x, y)."""
+    """Pin medals onto the jersey template in a chest-level row."""
     template = Image.open(template_path).convert("RGBA")
     medals = [Image.open(p).convert("RGBA") for p in medal_paths]
 
     tw, th = template.size
+
+    # Scale each medal to 1/8 of the template width, preserving aspect ratio.
     target_w = tw // 8
     sized = []
     for m in medals:
         scale = target_w / m.width
         sized.append(m.resize((target_w, max(1, int(m.height * scale)))))
 
-    canvas = template.copy()
+    mw = sized[0].width
     n = len(sized)
-    spacing = tw // (n + 1)
-    y = th // 3  # rough chest line; adjust once the template arrives
+
+    # Spread medals between 12% margins so they stay within the shirt body.
+    # With a single medal, centre it horizontally.
+    margin = int(tw * 0.12)
+    usable_w = tw - 2 * margin
+    spacing = usable_w // (n - 1) if n > 1 else 0
+    y = int(th * 0.16)  # upper chest — ribbon tops sit just below the collar
+
+    canvas = template.copy()
     for i, m in enumerate(sized):
-        x = spacing * (i + 1) - m.width // 2
-        canvas.paste(m, (x, y - m.height // 2), m)
+        x = margin + spacing * i - mw // 2 if n > 1 else (tw - mw) // 2
+        canvas.paste(m, (x, y), m)
 
     buf = io.BytesIO()
     canvas.save(buf, "PNG")
