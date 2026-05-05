@@ -108,6 +108,8 @@ async def collection(interaction: discord.Interaction):
         )
         return
 
+    # Defer immediately — image generation can exceed Discord's 3-second window.
+    await interaction.response.defer()
     paths = [str(medal_path(mid)) for mid in inv]
     buf = images.collage(paths)
     file = discord.File(buf, filename="collection.png")
@@ -116,7 +118,7 @@ async def collection(interaction: discord.Interaction):
         color=discord.Color.gold(),
     )
     embed.set_image(url="attachment://collection.png")
-    await interaction.response.send_message(embed=embed, file=file)
+    await interaction.followup.send(embed=embed, file=file)
 
 
 # ---------------------------------------------------------------------------
@@ -143,6 +145,9 @@ async def wear(interaction: discord.Interaction):
         )
         return
 
+    # Defer immediately — compositing onto the full-res template can exceed
+    # Discord's 3-second response window.
+    await interaction.response.defer()
     paths = [str(medal_path(mid)) for mid in inv]
     buf = images.wear(paths, str(TEMPLATE_PATH))
     file = discord.File(buf, filename="wear.png")
@@ -151,7 +156,7 @@ async def wear(interaction: discord.Interaction):
         color=discord.Color.gold(),
     )
     embed.set_image(url="attachment://wear.png")
-    await interaction.response.send_message(embed=embed, file=file)
+    await interaction.followup.send(embed=embed, file=file)
 
 
 # ---------------------------------------------------------------------------
