@@ -349,14 +349,17 @@ async def trade(interaction: discord.Interaction, target: discord.Member):
         )
         return
 
+    # Defer before the DB call so Discord's 3-second window doesn't expire.
+    await interaction.response.defer(ephemeral=True)
+
     inv = db.get_inventory(interaction.user.id)
     if not inv:
-        await interaction.response.send_message(
+        await interaction.followup.send(
             "Todavía no tienes medallas para intercambiar.", ephemeral=True
         )
         return
 
-    await interaction.response.send_message(
+    await interaction.followup.send(
         content=f"Elige una medalla para ofrecer a {target.display_name}:",
         view=InitiatorSelectView(interaction.user.id, inv, target),
         ephemeral=True,
