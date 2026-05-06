@@ -32,27 +32,40 @@ def _get(path: str) -> Image.Image:
     return _cache[path]
 
 
+def _disk_cache_path(path: str, width: int) -> Path:
+    """Sibling file that stores a pre-resized copy, e.g. medal_1_w133.png."""
+    p = Path(path)
+    return p.with_stem(f"{p.stem}_w{width}")
+
+
 def _get_sized(path: str, width: int) -> Image.Image:
-    """Return a cached resized copy, or resize from the original and cache it."""
+    """Return a cached resized copy, loading from the on-disk cache if available,
+    otherwise resizing from the original and saving to disk for next time."""
     key = f"{path}@{width}"
     if key not in _cache:
-        src   = _get(path)
-        scale = width / src.width
-        _cache[key] = src.resize(
-            (width, max(1, int(src.height * scale))), Image.LANCZOS
-        )
+        dp = _disk_cache_path(path, width)
+        if dp.exists():
+            # Fast path: just read the small pre-saved file — no CPU resizing.
+            _cache[key] = Image.open(dp).convert("RGBA")
+        else:
+            # First-ever run: resize and save so future startups are fast.
+            src   = _get(path)
+            scale = width / src.width
+            img   = src.resize((width, max(1, int(src.height * scale))), Image.LANCZOS)
+            img.save(dp, "PNG", compress_level=1)
+            _cache[key] = img
     return _cache[key]
 
 
 def preload(template_path: str, medal_paths: list[str]) -> None:
-    """Open, downscale, and cache all assets.  Call once at startup so the
-    first user command is fast.  Safe to call multiple times."""
+    """Load and cache all assets.  On first run this generates small on-disk
+    copies of the template and medals; subsequent runs just read those small
+    files, which is fast and keeps the event loop responsive during startup."""
     sp = _small_path(template_path)
 
     if sp not in _cache:
         if not Path(sp).exists():
-            # First-ever run: downscale the full-res template and save to disk
-            # so future restarts skip the expensive resize step.
+            # First-ever run: downscale and save to disk.
             img = _get(template_path)
             if img.width > MAX_TEMPLATE_W:
                 scale = MAX_TEMPLATE_W / img.width
@@ -62,7 +75,7 @@ def preload(template_path: str, medal_paths: list[str]) -> None:
             img.save(sp, "PNG", compress_level=1)
         _cache[sp] = Image.open(sp).convert("RGBA")
 
-    # Pre-resize medals to each display size so command handlers do no work.
+    # Pre-load pre-sized medal variants into memory.
     wear_w = MAX_TEMPLATE_W // 9
     for p in medal_paths:
         _get_sized(p, wear_w)

@@ -43,11 +43,6 @@ async def on_ready():
     else:
         await bot.tree.sync()
     print(f"Logged in as {bot.user} ({bot.user.id})")
-    # Preload and cache all image assets in a background thread so the first
-    # user command doesn't pay the cost of opening large source files.
-    medal_paths = [str(medal_path(m["id"])) for m in MEDALS]
-    await asyncio.to_thread(images.preload, str(TEMPLATE_PATH), medal_paths)
-    print("Image cache warm.")
 
 
 def medal_path(medal_id: int) -> Path:
