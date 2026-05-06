@@ -114,10 +114,11 @@ async def collection(interaction: discord.Interaction):
         )
         return
 
-    # Defer immediately — image generation can exceed Discord's 3-second window.
+    # Defer immediately, then generate the image in a thread so the event
+    # loop stays free to handle other interactions while Pillow is working.
     await interaction.response.defer()
     paths = [str(medal_path(mid)) for mid in inv]
-    buf = images.collage(paths)
+    buf = await asyncio.to_thread(images.collage, paths)
     file = discord.File(buf, filename="collection.png")
     embed = discord.Embed(
         title=f"Colección de {interaction.user.display_name}",
@@ -151,11 +152,11 @@ async def wear(interaction: discord.Interaction):
         )
         return
 
-    # Defer immediately — compositing onto the full-res template can exceed
-    # Discord's 3-second response window.
+    # Defer immediately, then composite in a thread so the event loop stays
+    # free to handle other interactions while Pillow is working.
     await interaction.response.defer()
     paths = [str(medal_path(mid)) for mid in inv]
-    buf = images.wear(paths, str(TEMPLATE_PATH))
+    buf = await asyncio.to_thread(images.wear, paths, str(TEMPLATE_PATH))
     file = discord.File(buf, filename="wear.jpg")
     embed = discord.Embed(
         title=f"El look de {interaction.user.display_name}",
